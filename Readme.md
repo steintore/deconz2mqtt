@@ -1,7 +1,7 @@
 # deconz-api-mqtt
 
-This is a Python utility that translates the [deCONZ rest api](https://dresden-elektronik.github.io/deconz-rest-doc/) rest api to MQTT messages.
-Using WebSockets for fetchong changes on the fly that are published
+This is a Python utility that translates the [deCONZ rest api](https://dresden-elektronik.github.io/deconz-rest-doc/) to MQTT messages.
+Will later be using WebSockets for fetching changes on the fly that are published
 to MQTT.
 There is also a full update of all items every x minutes, to make sure we have the last updated values.
 
