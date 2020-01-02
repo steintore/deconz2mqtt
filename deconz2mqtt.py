@@ -25,7 +25,7 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-logging.info("Startup deconz-api-mqtt:" + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+logging.info("Startup deconz2mqtt:" + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 config_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file)
 
 parser = SafeConfigParser()

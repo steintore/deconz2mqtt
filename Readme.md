@@ -1,4 +1,4 @@
-# deconz-api-mqtt
+# deconz2mqtt
 
 This is a Python utility that translates the [deCONZ rest api](https://dresden-elektronik.github.io/deconz-rest-doc/) to MQTT messages.
 Will later be using WebSockets for fetching changes on the fly that are published
@@ -48,32 +48,32 @@ $ cp default.template.cfg default.cfg
 
 Create systemd service, assuming repo was cloned to `/home/pi` folder on a RaspberryPi, adjust paths if needed
 
-`$ sudo ln -s /home/pi/deconz-api-mqtt/deconz-api-mqtt.service /etc/systemd/system/deconz-api-mqtt.service`
+`$ sudo ln -s /home/pi/deconz2mqtt/deconz2mqtt.service /etc/systemd/system/deconz2mqtt.service`
 
 Set permissions:
 
-`sudo chmod 644  /etc/systemd/system/deconz-api-mqtt.service`
+`sudo chmod 644  /etc/systemd/system/deconz2mqtt.service`
 
 Reload systemd then enable the service at startup:
 
 ```
 $ sudo systemctl daemon-reload
-$ sudo systemctl enable deconz-api-mqtt.service
-$ sudo systemctl start deconz-api-mqtt.service
+$ sudo systemctl enable deconz2mqtt.service
+$ sudo systemctl start deconz2mqtt.service
 ```
 
 Check service status and view log snippet with:
 
-`sudo systemctl status deconz-api-mqtt.service`
+`sudo systemctl status deconz2mqtt.service`
 
 To view more lines of logs add `nXX` where XX is the number of lines e.g. to view 50 lines of logs
 
-`sudo systemctl status deconz-api-mqtt.service -n50`
+`sudo systemctl status deconz2mqtt.service -n50`
 
 Start, stop and restart with:
 
 ```
-sudo systemctl start deconz-api-mqtt.service
-sudo systemctl stop deconz-api-mqtt.service
-sudo systemctl restart deconz-api-mqtt.service
+sudo systemctl start deconz2mqtt.service
+sudo systemctl stop deconz2mqtt.service
+sudo systemctl restart deconz2mqtt.service
 ```
