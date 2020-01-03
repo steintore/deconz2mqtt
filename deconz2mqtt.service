@@ -1,5 +1,5 @@
 [Unit]
-Description=Deconz API to MQTT
+Description=Deconz REST API 2 MQTT service
 After=multi-user.target
 
 [Service]
@@ -7,6 +7,7 @@ Type=idle
 ExecStart=/usr/bin/python3 /home/pi/deconz2mqtt/deconz2mqtt.py
 Restart=always
 RestartSec=60
+User=pi
 
 [Install]
 WantedBy=multi-user.target
