@@ -36,7 +36,7 @@ $ cp default.template.cfg default.cfg
 
 ### Install other python libs
 
-`pip3 install paho-mqtt websocket-client schedule`
+`pip3 install -r requirements.txt`
 
 *pip3 may require `sudo`*
 
