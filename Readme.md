@@ -34,16 +34,11 @@ $ cp default.template.cfg default.cfg
 - Get a new api_key to insert if you do not have one
 
 
-### Install other python libs
+### Run
+`$ make run`
 
-`pip3 install -r requirements.txt`
-
-*pip3 may require `sudo`*
-
-
-### This is work is inspired by 
-[leaf-python-mqtt](https://github.com/glynhudson/leaf-python-mqtt) and [deconz-mqtt](https://github.com/xibriz/deconz-mqtt)
-
+### Run tests
+`$ make test`
 
 ## Run script as system service
 
@@ -80,3 +75,7 @@ $ sudo systemctl start deconz2mqtt.service
 $ sudo systemctl stop deconz2mqtt.service
 $ sudo systemctl restart deconz2mqtt.service
 ```
+
+### This is work is inspired by 
+[leaf-python-mqtt](https://github.com/glynhudson/leaf-python-mqtt) and [deconz-mqtt](https://github.com/xibriz/deconz-mqtt)
+
