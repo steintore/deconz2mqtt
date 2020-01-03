@@ -10,8 +10,7 @@ The utility is connecting to the [deCONZ rest api](https://dresden-elektronik.gi
 
 # TODO
 
-- [ ] Scenes
-- [ ] Make a service
+- [ ] Handle scenes
 - [ ] OpenHAB examples and details about how to use it
 - [ ] Get WebSocket port from config
 - [ ] Config what to care about sensors, groups, lights etc
@@ -33,7 +32,7 @@ $ cp default.template.cfg default.cfg
 
 
 ### Run
-`$ make test run`
+`$ make init test run`
 
 ## Run script as system service
 
@@ -59,7 +58,7 @@ Check service status and view log snippet with:
 
 `$ sudo systemctl status deconz2mqtt.service`
 
-To view more lines of logs add `nXX` where XX is the number of lines e.g. to view 50 lines of logs
+To view more lines of logs add `-nXX` where XX is the number of lines e.g. to view 50 lines of logs
 
 `$ sudo systemctl status deconz2mqtt.service -n50`
 
