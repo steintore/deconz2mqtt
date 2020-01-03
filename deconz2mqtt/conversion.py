@@ -1,3 +1,5 @@
+import json
+
 global_bri_max: int = 255
 global_ct_min: int = 153
 global_ct_max: int = 500
@@ -54,3 +56,9 @@ def convert_state_value_to_percent(value_type, value, ct_min=global_ct_min, ct_m
         new_state = ct_to_percent(new_state, ct_min, ct_max)
     # TODO Handle HUE
     return new_state
+
+
+def convert_state_to_http_payload(action, item_type, msg):
+    item_set_state_type = 'state' if item_type == 'lights' else 'action'
+    new_state = convert_state_percent_to_value(action, msg.payload)
+    return item_set_state_type, json.dumps({action: new_state})

@@ -1,41 +1,25 @@
-import json
 import os
 
 import paho.mqtt.client as mqtt
-import requests
-import urllib3
 
-from deconz2mqtt.conversion import convert_state_percent_to_value
+from deconz2mqtt import conversion, utils
+from deconz2mqtt.conversion import convert_state_to_http_payload
 from deconz2mqtt.utils import logging as logging
 
 
 def on_message(userdata, msg):
-    global nameId
     logging.info("onMessage: " + msg.topic + " " + str(msg.payload))
     topic, action = os.path.split(msg.topic)
     topics = topic.split('/')
     item_name = topics[3]
-    item_id = nameId.get(item_name, None)
-    logging.debug("Item name is: " + item_name + " item id: {} - {}".format(nameId, item_id))
+    item_id = utils.nameId.get(item_name, None)
+    logging.debug("on_message: Item name is: {}, item id: {} - {}".format(item_name, utils.nameId, item_id))
     if item_id is None:
         logging.error("Could not find item id of item: {}".format(item_name))
         return
     item_type = topics[2]
-    item_set_state_type = 'state' if item_type == 'lights' else 'action'
-    new_state = convert_state_percent_to_value(action, msg.payload)
-    try:
-        url = api_url + "{}/{}/{}".format(item_type, item_id, item_set_state_type)
-        action = 'ct' if action == 'cti' else action
-        payload = json.dumps({action: new_state})
-        logging.debug("put to url: '{}' with payload: {}".format(url, payload))
-        res = requests.put(url, data=payload)
-        logging.debug("{}, put to url: '{}' with payload: {}".format(res.text, url, payload))
-    except urllib3.HTTPError as err:
-        logging.error("Failed to fetch data from api {}".format(err))
-    # get_latest_data()
-
-
-mqtt_cfg = 'MQTT'
+    item_set_state_type, payload = convert_state_to_http_payload(action, item_type, msg)
+    utils.http_client.send_to_api(item_type, item_id, item_set_state_type, payload)
 
 
 class Mqtt:
@@ -57,6 +41,7 @@ class Mqtt:
         self.client.connect(self.mqtt_host, self.mqtt_port, 60)
         self.client.publish(self.mqtt_status_topic, "Connecting to MQTT host " + self.mqtt_host)
         self.client.loop_start()
+        logging.info("Connected to MQTT")
 
     def publish(self, type, name, state, status='status'):
         topic = self.mqtt_status_topic + "/{}/{}/{}".format(type, name.lower(), status)
@@ -67,5 +52,32 @@ class Mqtt:
     def on_connect(self, client, userdata, flags, rc):
         logging.info("Connected to MQTT host " + self.mqtt_host + " with result code " + str(
             rc) + " subscribing to: " + self.mqtt_control_topic + " publishing to: " + self.mqtt_status_topic)
-        client.subscribe(self.mqtt_control_topic + "/#")
-        client.publish(self.mqtt_status_topic, "MQTT connected")
+        self.client.subscribe(self.mqtt_control_topic + "/#")
+        self.client.publish(self.mqtt_status_topic, "MQTT connected")
+
+    def parse_state_and_publish(self, endpoint_type, json_response, key, name, state_):
+        state = 'ON' if state_['on'] else 'OFF'
+        self.publish(endpoint_type, name, state, 'on')
+        if state_.get('bri', None) is not None:
+            bri = conversion.bri_to_percent(state_.get('bri', conversion.global_bri_max))
+            self.publish(endpoint_type, name, bri, 'bri')
+        ct = state_.get('ct', None)
+        if ct is not None:
+            ct_min = json_response[key].get('ctmin', conversion.global_ct_min)
+            ct_max = json_response[key].get('ctmax', conversion.global_ct_max)
+            ct_percent = conversion.ct_to_percent(ct, ct_min, ct_max)
+            self.publish(endpoint_type, name, ct_percent, 'ct')
+
+    def parse_sensor_and_publish(self, json_response, name):
+        value_type = 'sensors'
+        config_ = json_response['config']
+        state_ = json_response['state']
+        if 'battery' in config_:
+            self.publish(value_type, name, int(0 if config_['battery'] is None else config_['battery']),
+                         'battery')
+        if 'buttonevent' in state_:
+            self.publish(value_type, name, state_['buttonevent'], 'buttonevent')
+        if 'lastupdated' in state_:
+            self.publish(value_type, name, state_['lastupdated'], 'lastupdated')
+        if 'reachable' in config_:
+            self.publish(value_type, name, conversion.string_to_on_off(config_['reachable']), 'reachable')
