@@ -1,4 +1,3 @@
-TEST_PATH=./tests
 
 init:
 	pip3 install -r requirements.txt
@@ -7,9 +6,9 @@ lint:
 	flake8 --exclude=.tox
 
 test: clean-pyc
-	py.test --verbose --color=yes $(TEST_PATH)
+	python3 -m unittest -f tests/test_*.py
 
 run:
-	python3 deconz2mqtt.py
+	python3 main.py
 
 .PHONY: init clean-pyc

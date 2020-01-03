@@ -10,13 +10,11 @@ The utility is connecting to the [deCONZ rest api](https://dresden-elektronik.gi
 
 # TODO
 
-- [ ] Implement proper WebSocket
-- [ ] Send alive-messages over MQTT to tell the receiver the app is online
 - [ ] Scenes
-- [ ] Write the readme
 - [ ] Make a service
-- [ ] Tests https://realpython.com/python-testing/
 - [ ] OpenHAB examples and details about how to use it
+- [ ] Get WebSocket port from config
+- [ ] Config what to care about sensors, groups, lights etc
 
 
 ## Installation
@@ -35,10 +33,7 @@ $ cp default.template.cfg default.cfg
 
 
 ### Run
-`$ make run`
-
-### Run tests
-`$ make test`
+`$ make test run`
 
 ## Run script as system service
 
