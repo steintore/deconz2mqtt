@@ -16,9 +16,12 @@ The utility is connecting to the [deCONZ rest api](https://dresden-elektronik.gi
 - [ ] Write the readme
 - [ ] Make a service
 - [ ] Tests https://realpython.com/python-testing/
+- [ ] OpenHAB examples and details about how to use it
 
 
 ## Installation
+
+To get this working you must have deCONZ running on a computer and the deCONZ rest api in place
 
 Clone this repo and install the dependencies
 ```shell script
@@ -33,9 +36,9 @@ $ cp default.template.cfg default.cfg
 
 ### Install other python libs
 
-`pip install paho-mqtt websocket schedule`
+`pip3 install paho-mqtt websocket-client schedule`
 
-*pip may require `sudo`*
+*pip3 may require `sudo`*
 
 
 ### This is work is inspired by 
@@ -52,7 +55,7 @@ Create systemd service, assuming repo was cloned to `/home/pi` folder on a Raspb
 
 Set permissions:
 
-`sudo chmod 644  /etc/systemd/system/deconz2mqtt.service`
+`$ sudo chmod 644  /etc/systemd/system/deconz2mqtt.service`
 
 Reload systemd then enable the service at startup:
 
@@ -64,16 +67,16 @@ $ sudo systemctl start deconz2mqtt.service
 
 Check service status and view log snippet with:
 
-`sudo systemctl status deconz2mqtt.service`
+`$ sudo systemctl status deconz2mqtt.service`
 
 To view more lines of logs add `nXX` where XX is the number of lines e.g. to view 50 lines of logs
 
-`sudo systemctl status deconz2mqtt.service -n50`
+`$ sudo systemctl status deconz2mqtt.service -n50`
 
 Start, stop and restart with:
 
 ```
-sudo systemctl start deconz2mqtt.service
-sudo systemctl stop deconz2mqtt.service
-sudo systemctl restart deconz2mqtt.service
+$ sudo systemctl start deconz2mqtt.service
+$ sudo systemctl stop deconz2mqtt.service
+$ sudo systemctl restart deconz2mqtt.service
 ```
