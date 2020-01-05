@@ -1,4 +1,6 @@
 import unittest
+import re
+
 from deconz2mqtt.conversion import percent_to_bri, bri_to_percent, ct_to_percent, percent_to_ct, global_ct_max, \
     global_ct_min, string_to_on_off, convert_state_percent_to_value, convert_state_value_to_percent
 
@@ -47,10 +49,19 @@ class TestConversion(unittest.TestCase):
 
     def test_convert_state_value_on_off(self):
         for i in ['on', 'reachable', 'status', 'any_on', 'all_on']:
-            self.assertEqual("OFF", convert_state_percent_to_value(i, False))
-            self.assertEqual("OFF", convert_state_percent_to_value(i, 'False'))
-            self.assertEqual("ON", convert_state_percent_to_value(i, True))
-            self.assertEqual("ON", convert_state_percent_to_value(i, 'True'))
+            self.assertEqual('false', convert_state_percent_to_value(i, False))
+            self.assertEqual('false', convert_state_percent_to_value(i, 'False'))
+            self.assertEqual('false', convert_state_percent_to_value(i, "b'false'"))
+            self.assertEqual('true', convert_state_percent_to_value(i, True))
+            self.assertEqual('true', convert_state_percent_to_value(i, 'True'))
+            self.assertEqual('true', convert_state_percent_to_value(i, "b'true'"))
+
+    def test_convert_value_on_off_to_percent(self):
+        for i in ['on', 'reachable', 'status', 'any_on', 'all_on']:
+            self.assertEqual("OFF", convert_state_value_to_percent(i, False))
+            self.assertEqual("OFF", convert_state_value_to_percent(i, 'False'))
+            self.assertEqual("ON", convert_state_value_to_percent(i, True))
+            self.assertEqual("ON", convert_state_value_to_percent(i, 'True'))
 
     def test_convert_state_value_integer_all(self):
         for i in ['bri', 'sat', 'hue']:
@@ -80,6 +91,10 @@ class TestConversion(unittest.TestCase):
         self.assertEqual(100, convert_state_value_to_percent('ct', global_ct_max), "should convert ct_max and ct")
         self.assertEqual(0, convert_state_value_to_percent('ct', global_ct_min), "Should convert ct_min and ct")
 
+    def test_sub(self):
+        self.assertEqual('0', re.sub(r"^\D+'(?P<n>.*)'", "\g<n>", "b'0'"))
+        self.assertEqual('true', re.sub(r"^\D+'(?P<n>.*)'", "\g<n>", "b'true'"))
+        self.assertEqual('true', re.sub(r"^\D+'(?P<n>.*)'", "\g<n>", "d'true'"))
 
     def test_split(self):
         s = 'hello world'

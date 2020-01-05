@@ -7,21 +7,6 @@ from deconz2mqtt.conversion import convert_state_to_http_payload
 from deconz2mqtt.utils import logging as logging
 
 
-def on_message(userdata, msg):
-    logging.info("onMessage: " + msg.topic + " " + str(msg.payload))
-    topic, action = os.path.split(msg.topic)
-    topics = topic.split('/')
-    item_name = topics[3]
-    item_id = utils.nameId.get(item_name, None)
-    logging.debug("on_message: Item name is: {}, item id: {} - {}".format(item_name, utils.nameId, item_id))
-    if item_id is None:
-        logging.error("Could not find item id of item: {}".format(item_name))
-        return
-    item_type = topics[2]
-    item_set_state_type, payload = convert_state_to_http_payload(action, item_type, msg)
-    utils.http_client.send_to_api(item_type, item_id, item_set_state_type, payload)
-
-
 class Mqtt:
     client = None
 
@@ -36,7 +21,7 @@ class Mqtt:
     def config_and_connect_mqtt(self):
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
-        self.client.on_message = on_message
+        self.client.on_message = self.on_message
         self.client.username_pw_set(self.mqtt_username, self.mqtt_password)
         self.client.connect(self.mqtt_host, self.mqtt_port, 60)
         self.client.publish(self.mqtt_status_topic, "Connecting to MQTT host " + self.mqtt_host)
@@ -45,7 +30,7 @@ class Mqtt:
 
     def publish(self, type, name, state, status='status'):
         topic = self.mqtt_status_topic + "/{}/{}/{}".format(type, name.lower(), status)
-        logging.info("Publishing: {}/{}".format(topic, state))
+        logging.info("Publishing: {} state: {}".format(topic, state))
         self.client.publish(topic, state, retain=True)
 
     # The callback for when the client receives a CONNACK response from the server.
@@ -54,6 +39,22 @@ class Mqtt:
             rc) + " subscribing to: " + self.mqtt_control_topic + " publishing to: " + self.mqtt_status_topic)
         self.client.subscribe(self.mqtt_control_topic + "/#")
         self.client.publish(self.mqtt_status_topic, "MQTT connected")
+
+    def on_message(self, client, userdata, msg):
+        logging.info("on_message-1: " + msg.topic + " " + str(msg.payload))
+        topic, action = os.path.split(msg.topic)
+        topics = topic.split('/')
+        item_name = topics[3]
+        item_id = utils.nameId.get(item_name, None)
+        logging.debug("on_message-2: Item name is: {}, item id: {} - {}".format(item_name, utils.nameId, item_id))
+        if item_id is None:
+            logging.error("Could not find item id of item: {}".format(item_name))
+            return
+        item_type = topics[2]
+        logging.debug("on_message-3: action: {}, item_type: {}, msg: {}".format(action, item_type, msg))
+        item_set_state_type, payload = convert_state_to_http_payload(action, item_type, msg)
+        logging.debug("on_message-4: action: {}, item_type: {}, msg: {}, isst: {}, payload: {}".format(action, item_type, msg, item_set_state_type, payload))
+        utils.http_client.send_to_api(item_type, item_id, item_set_state_type, payload)
 
     def parse_state_and_publish(self, endpoint_type, json_response, key, name, state_):
         state = 'ON' if state_['on'] else 'OFF'

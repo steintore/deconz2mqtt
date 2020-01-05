@@ -55,13 +55,14 @@ def get_latest_data():
         utils.http_client.get_api_response(value_type, utils.etags.get(value_type, "0"))
 
 
-utils.mqtt_client.config_and_connect_mqtt()
-
+mqtt_thread = threading.Thread(target=utils.mqtt_client.config_and_connect_mqtt)
 ws_thread = threading.Thread(target=utils.ws_client.connect_ws)
+
+mqtt_thread.start()
+get_latest_data()
 ws_thread.start()
 logging.info("WS-thread started...")
 
-get_latest_data()
 logging.info("Fetched latest data...")
 
 # Then schedule
@@ -70,4 +71,5 @@ if update_interval_min and update_interval_min >= 1:
     schedule.every(int(update_interval_min)).minutes.do(get_latest_data)
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(100)
+

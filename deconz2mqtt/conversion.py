@@ -1,4 +1,6 @@
 import json
+import logging
+import re
 
 global_bri_max: int = 255
 global_ct_min: int = 153
@@ -34,11 +36,26 @@ def string_to_on_off(value):
     return 'ON' if str(value).lower() in ['true', 't', 'on'] else 'OFF'
 
 
+def on_off_to_string(value):
+    if value in ['OFF', False, 'false', 'False'] or value is False or str(value) == "b'false'":
+        return False
+    if value in ['ON', 'on', 'true', 'True', True] or value is True or str(value) == "b'true'":
+        return True
+    logging.debug("on_off_to_string: {}, {}, {}".format(value, value == True, value is False))
+    return str(value)
+
+
 def convert_state_percent_to_value(value_type, value, ct_min=global_ct_min, ct_max=global_ct_max):
-    new_state = string_to_on_off(value) if value_type in on_off_keys else value
-    if value_type in int_keys and not isinstance(new_state, int):
+    value = re.sub(r"^\D+'(?P<n>.*)'", "\g<n>", str(value))
+    new_state = on_off_to_string(value) if value_type in on_off_keys else value
+    isint = False
+    try:
+        isint = isinstance(int(new_state), int)
+        new_state = int(new_state) if value_type in int_keys and isint else new_state
+    except:
+        pass
+    if value_type in int_keys and not isint:
         return 0
-    new_state = int(new_state) if value_type in int_keys and isinstance(new_state, int) else new_state
     if value_type in ['bri', 'sat']:
         new_state = percent_to_bri(new_state)
     if value_type in ['ct', 'cti']:
@@ -60,5 +77,10 @@ def convert_state_value_to_percent(value_type, value, ct_min=global_ct_min, ct_m
 
 def convert_state_to_http_payload(action, item_type, msg):
     item_set_state_type = 'state' if item_type == 'lights' else 'action'
+    logging.debug("convert_state_to_http_payload-1: {}, {}, {}".format(action, item_type, item_set_state_type))
     new_state = convert_state_percent_to_value(action, msg.payload)
-    return item_set_state_type, json.dumps({action: new_state})
+    payload = {action: new_state}
+    logging.debug("convert_state_to_http_payload-2: {}, {}, {}, {}".format(action, item_type, new_state, payload))
+    payload_json = json.dumps(payload)
+    logging.debug("convert_state_to_http_payload-3: {}, {}, {}".format(new_state, payload, payload_json))
+    return item_set_state_type, payload_json
