@@ -52,7 +52,7 @@ class Mqtt:
             return
         item_type = topics[2]
         logging.debug("on_message-3: action: {}, item_type: {}, msg: {}".format(action, item_type, msg))
-        item_set_state_type, payload = convert_state_to_http_payload(action, item_type, msg)
+        item_set_state_type, payload = convert_state_to_http_payload(action, item_type, msg.payload)
         logging.debug("on_message-4: action: {}, item_type: {}, msg: {}, isst: {}, payload: {}".format(action, item_type, msg, item_set_state_type, payload))
         utils.http_client.send_to_api(item_type, item_id, item_set_state_type, payload)
 

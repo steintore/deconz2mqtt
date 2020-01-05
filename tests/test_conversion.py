@@ -1,8 +1,10 @@
+import json
 import unittest
 import re
 
 from deconz2mqtt.conversion import percent_to_bri, bri_to_percent, ct_to_percent, percent_to_ct, global_ct_max, \
-    global_ct_min, string_to_on_off, convert_state_percent_to_value, convert_state_value_to_percent
+    global_ct_min, string_to_on_off, convert_state_percent_to_value, convert_state_value_to_percent, \
+    convert_state_to_http_payload
 
 
 class TestConversion(unittest.TestCase):
@@ -49,12 +51,12 @@ class TestConversion(unittest.TestCase):
 
     def test_convert_state_value_on_off(self):
         for i in ['on', 'reachable', 'status', 'any_on', 'all_on']:
-            self.assertEqual('false', convert_state_percent_to_value(i, False))
-            self.assertEqual('false', convert_state_percent_to_value(i, 'False'))
-            self.assertEqual('false', convert_state_percent_to_value(i, "b'false'"))
-            self.assertEqual('true', convert_state_percent_to_value(i, True))
-            self.assertEqual('true', convert_state_percent_to_value(i, 'True'))
-            self.assertEqual('true', convert_state_percent_to_value(i, "b'true'"))
+            self.assertEqual(False, convert_state_percent_to_value(i, 'False'))
+            self.assertEqual(False, convert_state_percent_to_value(i, "b'false'"))
+            self.assertEqual(False, convert_state_percent_to_value(i, False))
+            self.assertEqual(True, convert_state_percent_to_value(i, True))
+            self.assertEqual(True, convert_state_percent_to_value(i, 'True'))
+            self.assertEqual(True, convert_state_percent_to_value(i, "b'true'"))
 
     def test_convert_value_on_off_to_percent(self):
         for i in ['on', 'reachable', 'status', 'any_on', 'all_on']:
@@ -96,12 +98,31 @@ class TestConversion(unittest.TestCase):
         self.assertEqual('true', re.sub(r"^\D+'(?P<n>.*)'", "\g<n>", "b'true'"))
         self.assertEqual('true', re.sub(r"^\D+'(?P<n>.*)'", "\g<n>", "d'true'"))
 
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
+    def test_convert_state_to_http_payload_lights_on(self):
+        item_state_type, result = convert_state_to_http_payload('on', 'lights', 'ON')
+        self.assertEqual(json.dumps({"on": True}), result)
+        self.assertEqual('state', item_state_type)
+
+    def test_convert_state_to_http_payload_groups_on(self):
+        item_state_type, result = convert_state_to_http_payload('on', 'groups', 'ON')
+        self.assertEqual(json.dumps({"on": True}), result)
+        self.assertEqual('action', item_state_type)
+
+    def test_convert_state_to_http_payload_bri_100(self):
+        item_state_type, result = convert_state_to_http_payload('bri', 'groups', 100)
+        self.assertEqual(json.dumps({
+            "bri": 255,
+            "on": True
+        }), result)
+        self.assertEqual('action', item_state_type)
+
+    def test_convert_state_to_http_payload_bri_0(self):
+        item_state_type, result = convert_state_to_http_payload('bri', 'groups', 0)
+        self.assertEqual(json.dumps({
+            "bri": 0,
+            "on": False
+        }), result)
+        self.assertEqual('action', item_state_type)
 
 
 if __name__ == '__main__':

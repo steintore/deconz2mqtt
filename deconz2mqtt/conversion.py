@@ -75,12 +75,11 @@ def convert_state_value_to_percent(value_type, value, ct_min=global_ct_min, ct_m
     return new_state
 
 
-def convert_state_to_http_payload(action, item_type, msg):
+def convert_state_to_http_payload(action, item_type, msg_payload):
     item_set_state_type = 'state' if item_type == 'lights' else 'action'
-    logging.debug("convert_state_to_http_payload-1: {}, {}, {}".format(action, item_type, item_set_state_type))
-    new_state = convert_state_percent_to_value(action, msg.payload)
+    new_state = convert_state_percent_to_value(action, msg_payload)
     payload = {action: new_state}
-    logging.debug("convert_state_to_http_payload-2: {}, {}, {}, {}".format(action, item_type, new_state, payload))
+    if action == 'bri':
+        payload['on'] = new_state > 0
     payload_json = json.dumps(payload)
-    logging.debug("convert_state_to_http_payload-3: {}, {}, {}".format(new_state, payload, payload_json))
     return item_set_state_type, payload_json
