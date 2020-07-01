@@ -1,5 +1,5 @@
 import requests
-import urllib3
+from urllib3.exceptions import HTTPError
 
 from deconz2mqtt import utils
 from deconz2mqtt.utils import logging as logging
@@ -10,7 +10,7 @@ class Http:
         self.url = 'http://{}:{}/api/{}/'.format(api_host, api_port, api_key)
 
     def get_api_response(self, endpoint_type, etag=None):
-        logging.debug("Fetching api response for: " + endpoint_type + " with url: " + self.url + " and etag: " + etag)
+        logging.debug("Fetching api response for: " + endpoint_type + " with url: " + self.url + "/" + endpoint_type + " and etag: " + etag)
         try:
             response = requests.get(
                 self.url + endpoint_type,
@@ -36,7 +36,7 @@ class Http:
                     utils.mqtt_client.parse_state_and_publish(endpoint_type, json_response, key, name, action)
                 elif endpoint_type == 'sensors':
                     utils.mqtt_client.parse_sensor_and_publish(json_response[key], name)
-        except urllib3.HTTPError as err:
+        except HTTPError as err:
             logging.error("Failed to fetch json_response from api {}".format(err))
 
     def send_to_api(self, item_type, item_id, item_set_state_type, payload):
@@ -45,5 +45,5 @@ class Http:
             logging.debug("put to url: '{}' with payload: {}".format(url, payload))
             res = requests.put(url, data=payload)
             logging.debug("{}, put to url: '{}' with payload: {}".format(res.text, url, payload))
-        except urllib3.HTTPError as err:
+        except HTTPError as err:
             logging.error("Failed to fetch data from api {}".format(err))

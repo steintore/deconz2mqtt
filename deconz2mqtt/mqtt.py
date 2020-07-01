@@ -57,11 +57,14 @@ class Mqtt:
         utils.http_client.send_to_api(item_type, item_id, item_set_state_type, payload)
 
     def parse_state_and_publish(self, endpoint_type, json_response, key, name, state_):
-        state = 'ON' if state_['on'] else 'OFF'
-        self.publish(endpoint_type, name, state, 'on')
+        state = 'ON' if getattr(state_, 'on', None) else 'OFF'
+        if state is not None:
+            self.publish(endpoint_type, name, state, 'on')
+
         if state_.get('bri', None) is not None:
             bri = conversion.bri_to_percent(state_.get('bri', conversion.global_bri_max))
             self.publish(endpoint_type, name, bri, 'bri')
+
         ct = state_.get('ct', None)
         if ct is not None:
             ct_min = json_response[key].get('ctmin', conversion.global_ct_min)
